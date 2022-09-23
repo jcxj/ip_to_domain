@@ -33,7 +33,6 @@ class test_sql:
                       24: 'X', 25: 'Y', 26: 'Z'}
         #在路径还没变之前读取下数据,防止因路径改变出bug
         df = pd.read_excel(filename)
-        print(filename)
         #filename="./result/"+sql.xlsx
         filename="./result_vul/"+filename[9:]
         workbook = xlsxwriter.Workbook(filename) #创建xlsx文件
@@ -52,7 +51,6 @@ class test_sql:
         for column in field:
                 worksheet.write('{}1'.format(column_lib[i]), column, title_format)#1控制在第一行
                 i += 1
-        print("len(result1):",len(result1))
         for n in range(len(result1)):
             temp="https://icp.chinaz.com/"+str(df.iloc[n, 0])
             worksheet.write(row,0,result1[n],content_format)
