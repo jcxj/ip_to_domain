@@ -1,8 +1,6 @@
 import argparse
 import configparser
-
 import pandas as pd
-
 import fofa_client
 import colorama
 import xlsxwriter
@@ -13,6 +11,8 @@ import re
 import requests
 import codecs
 import mmh3
+import os
+import test_sql
 
 #获取用户信息
 def get_userinfo():
@@ -30,7 +30,7 @@ def get_userinfo():
 #进行单语句查询
 def get_search(query_str):
     start_page = 1
-    end_page = 2
+    end_page = 3
     fields = config.get("fields", "fields")  # 获取查询参数
     print(colorama.Fore.RED + "======查询内容=======")
     print(colorama.Fore.GREEN + "[+] 查询语句：{}".format(query_str))
@@ -44,8 +44,8 @@ def get_search(query_str):
         except Exception as e:
             fields = "Error"
             data = {"results": ["{}".format(e)]}
-        for i in range(0,1):
-            data["results"][i] = data["results"][i] + read_msg(data["results"][i][0])
+        # for i in range(0,1):
+        #     data["results"][i] = data["results"][i] + read_msg(data["results"][i][0])
         database = database + data["results"]
         time.sleep(0.1)
     set_database = []
@@ -60,6 +60,7 @@ def out_file_excel(filename, database):
     column_lib = {1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G', 8: 'H', 9: 'I', 10: 'J', 11: 'K', 12: 'L',
                   13: 'M', 14: 'N', 15: 'O', 16: 'P', 17: 'Q', 18: 'R', 19: 'S', 20: 'T', 21: 'U', 22: 'V', 23: 'W',
                   24: 'X', 25: 'Y', 26: 'Z'}
+    filename="./result/"+filename
     workbook = xlsxwriter.Workbook(filename) ##创建xlsx文件
     worksheet = workbook.add_worksheet() #在文件中添加一个sheet1
     worksheet.set_column('A:{}'.format(column_lib[len(field)]), 30)#写几个列,如A:D,就是设置A到D单元格,这些单元格宽度为30
@@ -82,23 +83,7 @@ def out_file_excel(filename, database):
             worksheet.write(row, col + n, item[n], content_format)
         row = row + 1
     workbook.close()
-    print(colorama.Fore.GREEN + "[+] 文档输出成功！文件名为：{}".format(filename))
-#非fofa接口查询域名
-def read_msg(ip_test):
-    ip_to_web_url = "http://ip.yqie.com/iptodomain.aspx?ip="
-    try:
-        res = requests.get(url=ip_to_web_url+ip_test)
-        res.encoding = res.apparent_encoding
-        html = res.text
-        result_url = re.findall(r'<td width="90%" class="blue t_l" style="text-align: center">www\..*\.com</td>', html,
-                                 re.M | re.I)
-        result_url = result_url[0].strip()
-        result_url = re.findall(r'www.*.com', result_url, re.M | re.I)
-        return [result_url,"https://icp.chinaz.com/{}".format(result_url[0])]
-    except:
-        #没有域名的ip会自动跳过
-        return ["None","None"]
-        pass
+    print(colorama.Fore.GREEN + "[+] 文档输出成功！文件路径为{}".format(filename))
 #命令行传参
 #1.添加一个解析器对象
 parser = argparse.ArgumentParser(
@@ -128,8 +113,14 @@ if query_str:
         get_userinfo()
         database, fields = get_search(query_str)
         out_file_excel(filename, database)
+        print(filename)
+        #自动调用test_sql.py对文件名进行测试
+        test_sql = test_sql.test_sql
+        filename = "./result/"+filename
+        result1=test_sql.test_file(filename)
+        test_sql.out_file_excel(filename,result1)
 else:
-        print("语法错误,请输入python/python3 fofa.py --help进行查询")
+        print("语法错误,请输入python fofa.py --help进行查询")
 
 
 
