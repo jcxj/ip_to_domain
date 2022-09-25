@@ -84,6 +84,41 @@ def out_file_excel(filename, database):
         row = row + 1
     workbook.close()
     print(colorama.Fore.GREEN + "[+] 文档输出成功！文件路径为{}".format(filename))
+def out_file_excel_vul(filename,result1):
+    column_lib = {1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G', 8: 'H', 9: 'I', 10: 'J', 11: 'K', 12: 'L',
+                  13: 'M', 14: 'N', 15: 'O', 16: 'P', 17: 'Q', 18: 'R', 19: 'S', 20: 'T', 21: 'U', 22: 'V', 23: 'W',
+                  24: 'X', 25: 'Y', 26: 'Z'}
+    #在路径还没变之前读取下数据,防止因路径改变出bug
+    df = pd.read_excel(filename)
+    #filename="./result/"+sql.xlsx
+    filename="./result_vul/"+filename[9:]
+    workbook = xlsxwriter.Workbook(filename) #创建xlsx文件
+    worksheet = workbook.add_worksheet() #在文件中添加一个sheet1
+    field=["有漏洞的url","公司信息"]
+    worksheet.set_column('A:{}'.format(column_lib[len(field)]), 30)#写几个列,如A:D,就是设置A到D单元格,这些单元格宽度为30
+    #设置样式
+    title_format = workbook.add_format(
+        {'font_size': 14, 'border': 1, 'bold': True, 'font_color': 'white', 'bg_color': '#4BACC6',
+             'align': 'center',
+             'valign': 'center', 'text_wrap': True})
+    content_format = workbook.add_format({'border': 1, 'align': 'left', 'valign': 'vcenter', 'text_wrap': True})
+    i = 1
+    row = 1
+    #第一行表头也就是ip,host等
+    for column in field:
+            worksheet.write('{}1'.format(column_lib[i]), column, title_format)#1控制在第一行
+            i += 1
+    for n in range(len(result1)):
+        if str(df.iloc[n, 1]) != 'nan':#有域名
+            temp="https://icp.chinaz.com/"+str(df.iloc[n, 1])
+        #没域名,就反查以下域名
+        else:
+            temp="https://site.ip138.com/"+str(df.iloc[n, 0])
+        worksheet.write(row, 0, result1[n], content_format)
+        worksheet.write(row, 1, temp, content_format)
+        row = row + 1
+    workbook.close()
+    print(colorama.Fore.GREEN + "[+] 文档输出成功！文件路径为{}".format(filename))
 #命令行传参
 #1.添加一个解析器对象
 parser = argparse.ArgumentParser(
@@ -117,7 +152,7 @@ if query_str:
         test_sql = test_sql.test_sql
         filename = "./result/"+filename
         result1=test_sql.test_file(filename)
-        test_sql.out_file_excel(filename,result1)
+        out_file_excel_vul(filename,result1)
 else:
         print("语法错误,请输入python ip_to_domain.py --help进行查询")
 
